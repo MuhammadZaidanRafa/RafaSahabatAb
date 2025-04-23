@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Rafa Pengingat Antibiotik</title>
   <style>
     body {
@@ -41,6 +41,10 @@
     button:hover {
       background: #23845f;
     }
+    .hapus {
+      background: #e74c3c;
+      margin-top: 10px;
+    }
     table {
       width: 100%;
       margin-top: 20px;
@@ -76,6 +80,7 @@
   <input type="time" id="startTime" required>
 
   <button onclick="buatJadwal()">Buat Jadwal</button>
+  <button class="hapus" onclick="hapusJadwal()">Hapus Semua Jadwal</button>
 
   <table>
     <thead>
@@ -84,6 +89,9 @@
     <tbody id="jadwalBody"></tbody>
   </table>
 </div>
+
+<!-- 🔊 Suara alarm -->
+<audio id="alarmSound" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
 
 <script>
 let jadwal = [];
@@ -115,6 +123,7 @@ function buatJadwal() {
     jadwal.push({ nama, waktu: `${jam}:${menit}`, notified: false });
   }
 
+  simpanKeStorage();
   tampilkanJadwal();
 }
 
@@ -128,6 +137,26 @@ function tampilkanJadwal() {
   });
 }
 
+function simpanKeStorage() {
+  localStorage.setItem("jadwalAntibiotik", JSON.stringify(jadwal));
+}
+
+function loadDariStorage() {
+  const data = localStorage.getItem("jadwalAntibiotik");
+  if (data) {
+    jadwal = JSON.parse(data);
+    tampilkanJadwal();
+  }
+}
+
+function hapusJadwal() {
+  if (confirm("Yakin ingin menghapus semua jadwal?")) {
+    jadwal = [];
+    localStorage.removeItem("jadwalAntibiotik");
+    tampilkanJadwal();
+  }
+}
+
 function cekPengingat() {
   const now = new Date();
   const jam = now.getHours().toString().padStart(2, '0');
@@ -137,7 +166,9 @@ function cekPengingat() {
   jadwal.forEach(j => {
     if (j.waktu === waktuSekarang && !j.notified) {
       new Notification("Waktunya minum antibiotik!", { body: `${j.nama} sekarang.` });
+      document.getElementById("alarmSound").play();
       j.notified = true;
+      simpanKeStorage();
     } else if (j.waktu !== waktuSekarang) {
       j.notified = false;
     }
@@ -147,8 +178,8 @@ function cekPengingat() {
 if (Notification.permission !== "granted") {
   Notification.requestPermission();
 }
-
 setInterval(cekPengingat, 1000);
+loadDariStorage();
 </script>
 
 </body>
