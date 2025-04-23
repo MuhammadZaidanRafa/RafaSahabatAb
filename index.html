@@ -90,8 +90,8 @@
   </table>
 </div>
 
-<!-- 🔊 Suara alarm -->
-<audio id="alarmSound" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
+<!-- Suara alarm dari file lokal -->
+<audio id="alarmSound" src="hana.mp4" preload="auto"></audio>
 
 <script>
 let jadwal = [];
@@ -166,7 +166,7 @@ function cekPengingat() {
   jadwal.forEach(j => {
     if (j.waktu === waktuSekarang && !j.notified) {
       new Notification("Waktunya minum antibiotik!", { body: `${j.nama} sekarang.` });
-      document.getElementById("alarmSound").play();
+      document.getElementById("alarmSound").play(); // Memainkan suara lokal
       j.notified = true;
       simpanKeStorage();
     } else if (j.waktu !== waktuSekarang) {
