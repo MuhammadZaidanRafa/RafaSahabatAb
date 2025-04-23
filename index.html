@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rafa Pengingat Antibiotik</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0; padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      background: #fff;
+      padding: 20px;
+      max-width: 500px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 100%;
+    }
+    h2 {
+      text-align: center;
+      color: #2a7;
+    }
+    label, select, input, button {
+      display: block;
+      width: 100%;
+      margin-top: 15px;
+      font-size: 1em;
+    }
+    button {
+      background: #2a7;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #23845f;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    .clock {
+      text-align: center;
+      font-size: 1.2em;
+      margin-bottom: 10px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Rafa Sahabat Antibiotik</h2>
+  <div class="clock" id="clock">00:00:00</div>
+
+  <label for="jenis">Pilih Antibiotik:</label>
+  <select id="jenis">
+    <option value="Amoxicillin" data-freq="3">Amoxicillin (3x sehari)</option>
+    <option value="Cefixime" data-freq="2">Cefixime (2x sehari)</option>
+    <option value="Azithromycin" data-freq="1">Azithromycin (1x sehari)</option>
+  </select>
+
+  <label for="startTime">Jam Pertama Minum:</label>
+  <input type="time" id="startTime" required>
+
+  <button onclick="buatJadwal()">Buat Jadwal</button>
+
+  <table>
+    <thead>
+      <tr><th>Antibiotik</th><th>Waktu Minum</th></tr>
+    </thead>
+    <tbody id="jadwalBody"></tbody>
+  </table>
+</div>
+
+<script>
+let jadwal = [];
+
+function updateClock() {
+  const now = new Date();
+  const jam = now.getHours().toString().padStart(2, '0');
+  const menit = now.getMinutes().toString().padStart(2, '0');
+  const detik = now.getSeconds().toString().padStart(2, '0');
+  document.getElementById('clock').textContent = `${jam}:${menit}:${detik}`;
+}
+setInterval(updateClock, 1000);
+
+function buatJadwal() {
+  const jenis = document.getElementById('jenis');
+  const nama = jenis.value;
+  const frekuensi = parseInt(jenis.options[jenis.selectedIndex].dataset.freq);
+  const startTime = document.getElementById('startTime').value;
+  if (!startTime) return alert("Harap isi jam pertama minum.");
+
+  const [startHour, startMinute] = startTime.split(':').map(Number);
+  jadwal = [];
+
+  for (let i = 0; i < frekuensi; i++) {
+    const date = new Date();
+    date.setHours(startHour + i * Math.floor(24 / frekuensi), startMinute, 0, 0);
+    const jam = date.getHours().toString().padStart(2, '0');
+    const menit = date.getMinutes().toString().padStart(2, '0');
+    jadwal.push({ nama, waktu: `${jam}:${menit}`, notified: false });
+  }
+
+  tampilkanJadwal();
+}
+
+function tampilkanJadwal() {
+  const tbody = document.getElementById('jadwalBody');
+  tbody.innerHTML = '';
+  jadwal.forEach(j => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${j.nama}</td><td>${j.waktu}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function cekPengingat() {
+  const now = new Date();
+  const jam = now.getHours().toString().padStart(2, '0');
+  const menit = now.getMinutes().toString().padStart(2, '0');
+  const waktuSekarang = `${jam}:${menit}`;
+
+  jadwal.forEach(j => {
+    if (j.waktu === waktuSekarang && !j.notified) {
+      new Notification("Waktunya minum antibiotik!", { body: `${j.nama} sekarang.` });
+      j.notified = true;
+    } else if (j.waktu !== waktuSekarang) {
+      j.notified = false;
+    }
+  });
+}
+
+if (Notification.permission !== "granted") {
+  Notification.requestPermission();
+}
+
+setInterval(cekPengingat, 1000);
+</script>
+
+</body>
+</html>
